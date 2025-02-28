@@ -91,8 +91,8 @@ def find_dominant_color(cluster: KMeans, \
         centroids = cluster.cluster_centers_
 
     # Create a histogram of cluster labels.
-    labels = np.arange(0, len(np.unique(cluster.labels_)) + 1)
-    (hist, _) = np.histogram(cluster.labels_, bins = labels)
+    bins = np.arange(0, len(np.unique(cluster.labels_)) + 1)
+    (hist, _) = np.histogram(cluster.labels_, bins = bins)
     hist = hist.astype("float")
     hist /= hist.sum()
 
@@ -127,9 +127,9 @@ def correction_color(color: tuple, \
     """
     if mode:
         # Increase brightness, ensuring the value does not exceed 255.
-        modify_color = tuple(map(lambda x : min(x+value, 255), list(color)))
+        modified_color = tuple(min(c + value, 255) for c in color)
     else:
         # Decrease brightness, ensuring the value does not go below 0.
-        modify_color = tuple(map(lambda x : max(x-value, 0), list(color)))
+        modified_color = tuple(max(c - value, 0) for c in color)
 
-    return modify_color
+    return modified_color
