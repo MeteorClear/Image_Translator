@@ -25,25 +25,19 @@ def find_roi(image: np.ndarray, x: int, y: int, w: int, h: int) -> np.ndarray:
     """
     image_height, image_width, _ = image.shape
 
-    # Attempt to extract the ROI with a 5-pixel margin on all sides.
-    try:
-        roi = image[max(0, y-5) : min(image_height, y+h+5), \
-                    max(0, x-5) : min(image_width, x+w+5)]
-        
-    except:
-        # fail: try with a 1-pixel margin.
+    for margin in [5, 1, 0]:
         try:
-            roi = image[max(0, y-1) : min(image_height, y+h+1), \
-                        max(0, x-1) : min(image_width, x+w+1)]
-        except:
-            # fail: extract the ROI without any extra margin.
-            roi = image[y:y+h, x:x+w]
-    
-    # If the ROI is empty, use the basic extraction.
-    if len(roi) < 1:
-        roi = image[y:y+h, x:x+w]
+            roi = image[ \
+                max(0, y - margin) : min(image_height, y + h + margin), \
+                max(0, x - margin) : min(image_width, x + w + margin) \
+            ]
 
-    return roi
+            if roi.size > 0:
+                return roi
+        except:
+            continue
+
+    return image[y:y+h, x:x+w]
 
 
 def make_cluster(roi: np.ndarray, cluster_number: int = 5) -> KMeans:
