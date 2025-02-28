@@ -39,13 +39,14 @@ def find_sentence(ocr_data: dict, threshold:int = 50) -> dict:
     Returns:
         dict: A dictionary containing the grouped sentence data with keys 'text', 'left', 'top', 'width', 'height', and 'fsize'.
     """
-    result = dict()
-    result['text'] = []
-    result['left'] = []
-    result['top'] = []
-    result['width'] = []
-    result['height'] = []
-    result['fsize'] = []
+    result = {
+        'text': [],
+        'left': [],
+        'top': [],
+        'width': [],
+        'height': [],
+        'fsize': []
+    }
 
     sentence_string = ''
     sentence_left = -1
@@ -53,6 +54,25 @@ def find_sentence(ocr_data: dict, threshold:int = 50) -> dict:
     sentence_width = -1
     sentence_height = -1
     sentence_fsize = []
+
+    def flush_sentence():
+        nonlocal sentence_string, sentence_left, sentence_top, sentence_width, sentence_height, sentence_fsize
+
+        if len(sentence_string.strip()) > 1:
+            result['text'].append(sentence_string.strip())
+            result['left'].append(sentence_left)
+            result['top'].append(sentence_top)
+            result['width'].append(sentence_width)
+            result['height'].append(sentence_height)
+            result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_fsize), sentence_fsize))) / len(sentence_fsize)**2))
+
+            sentence_string = ''
+            sentence_left = -1
+            sentence_top = -1
+            sentence_width = -1
+            sentence_height = -1
+            sentence_fsize = []
+
 
     for i in range(len(ocr_data['text'])):
         lv = ocr_data['level'][i]
@@ -67,38 +87,13 @@ def find_sentence(ocr_data: dict, threshold:int = 50) -> dict:
 
         # Initialize when OCR result level drops to 4
         if lv == 4:
-            if len(sentence_string.strip()) > 1:
-                result['text'].append(sentence_string.strip())
-                result['left'].append(sentence_left)
-                result['top'].append(sentence_top)
-                result['width'].append(sentence_width)
-                result['height'].append(sentence_height)
-                result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_fsize), sentence_fsize))) / len(sentence_fsize)**2))
-
-                sentence_string = ''
-                sentence_left = -1
-                sentence_top = -1
-                sentence_width = -1
-                sentence_height = -1
-                sentence_fsize = []
+            flush_sentence()
 
         # Save if the word's location is close to the previous word
         elif lv == 5:
             if conf > threshold and len(text) > 0:
                 if sentence_left != -1 and sentence_left+sentence_width+w < x:
-                    result['text'].append(sentence_string.strip())
-                    result['left'].append(sentence_left)
-                    result['top'].append(sentence_top)
-                    result['width'].append(sentence_width)
-                    result['height'].append(sentence_height)
-                    result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_fsize), sentence_fsize))) / len(sentence_fsize)**2))
-
-                    sentence_string = ''
-                    sentence_left = -1
-                    sentence_top = -1
-                    sentence_width = -1
-                    sentence_height = -1
-                    sentence_fsize = []
+                    flush_sentence()
 
                     sentence_string += ' ' + text
                     sentence_left = x if sentence_left==-1 else min(sentence_left, x)
@@ -117,13 +112,7 @@ def find_sentence(ocr_data: dict, threshold:int = 50) -> dict:
                     sentence_fsize.append(h)
 
     # Finally save the remaining value
-    if len(sentence_string.strip()) > 1:
-        result['text'].append(sentence_string.strip())
-        result['left'].append(sentence_left)
-        result['top'].append(sentence_top)
-        result['width'].append(sentence_width)
-        result['height'].append(sentence_height)
-        result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_fsize), sentence_fsize))) / len(sentence_fsize)**2))
+    flush_sentence()
 
     return result
 
