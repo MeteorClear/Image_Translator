@@ -132,15 +132,16 @@ def make_sentence_block(sentence_data: dict, threshold: float = 1.5) -> dict:
     Returns:
         dict: A dictionary with paragraph data containing keys 'text', 'left', 'top', 'width', 'height', 'line', 'lpos', and 'fsize'.
     """
-    result = dict()
-    result['text'] = []
-    result['left'] = []
-    result['top'] = []
-    result['width'] = []
-    result['height'] = []
-    result['line'] = []
-    result['lpos'] = []
-    result['fsize'] = []
+    result = {
+        'text': [],
+        'left': [],
+        'top': [],
+        'width': [],
+        'height': [],
+        'line': [],
+        'lpos': [],
+        'fsize': []
+    }
 
     if len(sentence_data['text']) < 1:
         return result
@@ -155,6 +156,18 @@ def make_sentence_block(sentence_data: dict, threshold: float = 1.5) -> dict:
     line_height = [sentence_data['fsize'][0]]
     base_height = block_height
 
+    def flush_block():
+        nonlocal block_string, block_left, block_top, block_width, block_height, line, line_pos, line_height
+        result['text'].append(block_string)
+        result['left'].append(block_left)
+        result['top'].append(block_top)
+        result['width'].append(block_width)
+        result['height'].append(block_height)
+        result['line'].append(line)
+        result['lpos'].append(line_pos)
+        result['fsize'].append(line_height)
+
+
     for i in range(1, len(sentence_data['text'])):
         text = sentence_data['text'][i]
         x = sentence_data['left'][i]
@@ -167,14 +180,7 @@ def make_sentence_block(sentence_data: dict, threshold: float = 1.5) -> dict:
 
         # Construct a paragraph based on the distance between the positions of the starting words of the two sentences
         if h*threshold < base_height or distance > base_height*threshold:
-            result['text'].append(block_string)
-            result['left'].append(block_left)
-            result['top'].append(block_top)
-            result['width'].append(block_width)
-            result['height'].append(block_height)
-            result['line'].append(line)
-            result['lpos'].append(line_pos)
-            result['fsize'].append(line_height)
+            flush_block()
 
             block_string = text
             block_left = x
@@ -196,14 +202,7 @@ def make_sentence_block(sentence_data: dict, threshold: float = 1.5) -> dict:
             line_height.append(fsize)
 
     # Finally save the remaining value
-    result['text'].append(block_string)
-    result['left'].append(block_left)
-    result['top'].append(block_top)
-    result['width'].append(block_width)
-    result['height'].append(block_height)
-    result['line'].append(line)
-    result['lpos'].append(line_pos)
-    result['fsize'].append(line_height)
+    flush_block()
     
     return result
 
