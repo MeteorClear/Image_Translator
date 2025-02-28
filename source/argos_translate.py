@@ -95,7 +95,7 @@ def text_translate(text: str, \
         detail (bool, optional): If True, returns a tuple with detailed translation information
 
     Returns:
-        str or tuple: The translated text if detail is False, otherwise a tuple with detailed translation info.
+        str/tuple: The translated text if detail is False, otherwise a tuple with detailed translation info.
 
     Raises:
         Exception: If an error occurs during the translation process.
