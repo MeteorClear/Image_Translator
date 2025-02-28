@@ -236,26 +236,23 @@ def distribute_text(text: str, line_num: int, line_width: list) -> list:
     """
     tokens = text.split()
     total_tokens_length = len(tokens)
-    token_width = sum(line_width)
+    total_width = sum(line_width)
 
-    # Find proportions proportional to line width
-    line_rato = list(map(lambda x : round(x / token_width, 2), line_width))
+    # Calculate the proportion of tokens for each line.
+    line_ratios = [round(w / total_width, 2) for w in line_width]
 
     distributed_lines = []
 
     # Divide one sentence into multiple lines to match the line width ratio
     for i in range(line_num):
-        sentence_buffer = ''
-        max_voca = int(total_tokens_length * line_rato[i])
-
-        if i == (line_num-1):
-            while len(tokens) > 0:
-                sentence_buffer += tokens.pop(0) + ' '
+        if i == line_num - 1:
+            line_tokens = tokens
+            tokens = []
         else:
-            for i in range(max_voca):
-                if len(tokens) > 0:
-                    sentence_buffer += tokens.pop(0) + ' '
+            num_tokens = int(total_tokens_length * line_ratios[i])
+            line_tokens = tokens[:num_tokens]
+            tokens = tokens[num_tokens:]
 
-        distributed_lines.append(sentence_buffer)
+        distributed_lines.append(" ".join(line_tokens))
     
     return distributed_lines
