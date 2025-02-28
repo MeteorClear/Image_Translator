@@ -1,25 +1,44 @@
 import math
 
-'''
-Source code that gathers fragmented words to form sentences and paragraphs
-Close words are grouped together to form a sentence
-Create a paragraph by grouping the surrounding sentences based on the position of the starting word of the sentence
-'''
+"""
+This module gathers fragmented OCR words into sentences and groups the sentences into paragraphs.
+Close words are combined to form sentences, 
+and adjacent sentences are clustered into paragraphs based on the position of their starting words.
+"""
 
 
 def calculate_distance(x1: int, y1: int, x2: int, y2: int) -> float:
-    '''
-    Find Euclidean distance, 
-    Using 2 coordinates
-    '''
+    """
+    Calculate the Euclidean distance between two points.
+
+    Args:
+        x1 (int): X-coordinate of the first point.
+        y1 (int): Y-coordinate of the first point.
+        x2 (int): X-coordinate of the second point.
+        y2 (int): Y-coordinate of the second point.
+
+    Returns:
+        float: The Euclidean distance.
+    """
     return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
 
-def find_sentence(ocr_data: dict, threshold:int=50) -> dict:
-    '''
-    collection of words into sentences, 
-    Using Tesserect result
-    '''
+def find_sentence(ocr_data: dict, threshold:int = 50) -> dict:
+    """
+    Group OCR words into sentences based on Tesseract output.
+
+    For each word in the OCR result (with keys such as 'text', 'level', 'left', 'top', 'width', 'height', 'conf'),
+    this function concatenates words that are close together (level 5) 
+    and flushes the current sentence when a new line (level 4)
+    is encountered or when a gap between words is detected.
+
+    Args:
+        ocr_data (dict): Dictionary containing Tesseract OCR results.
+        threshold (int, optional): Confidence threshold for including words. Defaults to 50.
+
+    Returns:
+        dict: A dictionary containing the grouped sentence data with keys 'text', 'left', 'top', 'width', 'height', and 'fsize'.
+    """
     result = dict()
     result['text'] = []
     result['left'] = []
@@ -109,10 +128,21 @@ def find_sentence(ocr_data: dict, threshold:int=50) -> dict:
     return result
 
 
-def make_sentence_block(sentence_data: dict, threshold:float=1.5) -> dict:
-    '''
-    Gather adjacent sentences and cluster them into paragraphs
-    '''
+def make_sentence_block(sentence_data: dict, threshold: float = 1.5) -> dict:
+    """
+    Cluster adjacent sentences into paragraph blocks.
+
+    This function groups sentences based on the distance between the starting positions of consecutive sentences.
+    If the vertical distance between the blocks exceeds a threshold (based on the height of the current block)
+    or if the height condition is met, the current paragraph block is flushed and a new block begins.
+
+    Args:
+        sentence_data (dict): Dictionary containing sentence data with keys 'text', 'left', 'top', 'width', 'height', and 'fsize'.
+        threshold (float, optional): Threshold factor for grouping sentences. Defaults to 1.5.
+
+    Returns:
+        dict: A dictionary with paragraph data containing keys 'text', 'left', 'top', 'width', 'height', 'line', 'lpos', and 'fsize'.
+    """
     result = dict()
     result['text'] = []
     result['left'] = []
@@ -190,9 +220,20 @@ def make_sentence_block(sentence_data: dict, threshold:float=1.5) -> dict:
 
 
 def distribute_text(text: str, line_num: int, line_width: list) -> list:
-    '''
-    Split one string to number of line and widths of each line
-    '''
+    """
+    Distribute a text string into multiple lines according to specified line widths.
+
+    The text is split into words, and the number of words allocated to each line is determined
+    by the proportional width of that line. The final line receives any remaining words.
+
+    Args:
+        text (str): The text to distribute.
+        line_num (int): The number of lines to divide the text into.
+        line_width (list): A list of integers representing the widths for each line.
+
+    Returns:
+        list: A list of strings, each representing a line of text.
+    """
     token = text.split()
     token_len = len(token)
 
