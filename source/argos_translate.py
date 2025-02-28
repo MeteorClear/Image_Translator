@@ -2,12 +2,12 @@ import argostranslate
 import argostranslate.package
 import argostranslate.translate
 
-'''
+"""
 Source file for Argos translation.
 Used for offline translation.
 Argos Translate is Open-source offline translation library written in Python.
 https://github.com/argosopentech/argos-translate
-'''
+"""
 
 # Global flag: check for installed language pack.
 VALID_CHECK = False
@@ -33,8 +33,7 @@ def find_package_index(package_language: str) -> list:
     return package_index
 
 
-def valid_check(package_language: str= None, \
-                install_all: bool= False) -> None:
+def valid_check(package_language: str= None, install_all: bool= False) -> None:
     """
     Validate and install the required language packages for translation.
 
@@ -80,10 +79,7 @@ def valid_check(package_language: str= None, \
     return
 
 
-def text_translate(text: str, \
-                   dest: str, \
-                   src: str, \
-                   detail: bool= False) -> str:
+def text_translate(text: str, dest: str, src: str, detail: bool= False) -> str:
     """
     Translate a given text from the source language to the destination language.
 

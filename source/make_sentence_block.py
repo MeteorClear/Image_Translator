@@ -1,23 +1,52 @@
-import sub_func
+import math
 
-'''
-Source code that gathers fragmented words to form sentences and paragraphs
-Close words are grouped together to form a sentence
-Create a paragraph by grouping the surrounding sentences based on the position of the starting word of the sentence
-'''
+"""
+This module gathers fragmented OCR words into sentences and groups the sentences into paragraphs.
+Close words are combined to form sentences, 
+and adjacent sentences are clustered into paragraphs based on the position of their starting words.
+"""
 
-def find_sentence(ocr_data: dict, threshold:int=50) -> dict:
-    '''
-    collection of words into sentences, 
-    Using Tesserect result
-    '''
-    result = dict()
-    result['text'] = []
-    result['left'] = []
-    result['top'] = []
-    result['width'] = []
-    result['height'] = []
-    result['fsize'] = []
+
+def calculate_distance(x1: int, y1: int, x2: int, y2: int) -> float:
+    """
+    Calculate the Euclidean distance between two points.
+
+    Args:
+        x1 (int): X-coordinate of the first point.
+        y1 (int): Y-coordinate of the first point.
+        x2 (int): X-coordinate of the second point.
+        y2 (int): Y-coordinate of the second point.
+
+    Returns:
+        float: The Euclidean distance.
+    """
+    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+
+def find_sentence(ocr_data: dict, threshold:int = 50) -> dict:
+    """
+    Group OCR words into sentences based on Tesseract output.
+
+    For each word in the OCR result (with keys such as 'text', 'level', 'left', 'top', 'width', 'height', 'conf'),
+    this function concatenates words that are close together (level 5) 
+    and flushes the current sentence when a new line (level 4)
+    is encountered or when a gap between words is detected.
+
+    Args:
+        ocr_data (dict): Dictionary containing Tesseract OCR results.
+        threshold (int, optional): Confidence threshold for including words. Defaults to 50.
+
+    Returns:
+        dict: A dictionary containing the grouped sentence data with keys 'text', 'left', 'top', 'width', 'height', and 'fsize'.
+    """
+    result = {
+        'text': [],
+        'left': [],
+        'top': [],
+        'width': [],
+        'height': [],
+        'fsize': []
+    }
 
     sentence_string = ''
     sentence_left = -1
@@ -25,6 +54,25 @@ def find_sentence(ocr_data: dict, threshold:int=50) -> dict:
     sentence_width = -1
     sentence_height = -1
     sentence_fsize = []
+
+    def flush_sentence():
+        nonlocal sentence_string, sentence_left, sentence_top, sentence_width, sentence_height, sentence_fsize
+
+        if len(sentence_string.strip()) > 1:
+            result['text'].append(sentence_string.strip())
+            result['left'].append(sentence_left)
+            result['top'].append(sentence_top)
+            result['width'].append(sentence_width)
+            result['height'].append(sentence_height)
+            result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_fsize), sentence_fsize))) / len(sentence_fsize)**2))
+
+            sentence_string = ''
+            sentence_left = -1
+            sentence_top = -1
+            sentence_width = -1
+            sentence_height = -1
+            sentence_fsize = []
+
 
     for i in range(len(ocr_data['text'])):
         lv = ocr_data['level'][i]
@@ -39,38 +87,13 @@ def find_sentence(ocr_data: dict, threshold:int=50) -> dict:
 
         # Initialize when OCR result level drops to 4
         if lv == 4:
-            if len(sentence_string.strip()) > 1:
-                result['text'].append(sentence_string.strip())
-                result['left'].append(sentence_left)
-                result['top'].append(sentence_top)
-                result['width'].append(sentence_width)
-                result['height'].append(sentence_height)
-                result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_fsize), sentence_fsize))) / len(sentence_fsize)**2))
-
-                sentence_string = ''
-                sentence_left = -1
-                sentence_top = -1
-                sentence_width = -1
-                sentence_height = -1
-                sentence_fsize = []
+            flush_sentence()
 
         # Save if the word's location is close to the previous word
         elif lv == 5:
             if conf > threshold and len(text) > 0:
                 if sentence_left != -1 and sentence_left+sentence_width+w < x:
-                    result['text'].append(sentence_string.strip())
-                    result['left'].append(sentence_left)
-                    result['top'].append(sentence_top)
-                    result['width'].append(sentence_width)
-                    result['height'].append(sentence_height)
-                    result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_fsize), sentence_fsize))) / len(sentence_fsize)**2))
-
-                    sentence_string = ''
-                    sentence_left = -1
-                    sentence_top = -1
-                    sentence_width = -1
-                    sentence_height = -1
-                    sentence_fsize = []
+                    flush_sentence()
 
                     sentence_string += ' ' + text
                     sentence_left = x if sentence_left==-1 else min(sentence_left, x)
@@ -89,30 +112,36 @@ def find_sentence(ocr_data: dict, threshold:int=50) -> dict:
                     sentence_fsize.append(h)
 
     # Finally save the remaining value
-    if len(sentence_string.strip()) > 1:
-        result['text'].append(sentence_string.strip())
-        result['left'].append(sentence_left)
-        result['top'].append(sentence_top)
-        result['width'].append(sentence_width)
-        result['height'].append(sentence_height)
-        result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_fsize), sentence_fsize))) / len(sentence_fsize)**2))
+    flush_sentence()
 
     return result
 
 
-def make_sentence_block(sentence_data: dict, threshold:float=1.5) -> dict:
-    '''
-    Gather adjacent sentences and cluster them into paragraphs
-    '''
-    result = dict()
-    result['text'] = []
-    result['left'] = []
-    result['top'] = []
-    result['width'] = []
-    result['height'] = []
-    result['line'] = []
-    result['lpos'] = []
-    result['fsize'] = []
+def make_sentence_block(sentence_data: dict, threshold: float = 1.5) -> dict:
+    """
+    Cluster adjacent sentences into paragraph blocks.
+
+    This function groups sentences based on the distance between the starting positions of consecutive sentences.
+    If the vertical distance between the blocks exceeds a threshold (based on the height of the current block)
+    or if the height condition is met, the current paragraph block is flushed and a new block begins.
+
+    Args:
+        sentence_data (dict): Dictionary containing sentence data with keys 'text', 'left', 'top', 'width', 'height', and 'fsize'.
+        threshold (float, optional): Threshold factor for grouping sentences. Defaults to 1.5.
+
+    Returns:
+        dict: A dictionary with paragraph data containing keys 'text', 'left', 'top', 'width', 'height', 'line', 'lpos', and 'fsize'.
+    """
+    result = {
+        'text': [],
+        'left': [],
+        'top': [],
+        'width': [],
+        'height': [],
+        'line': [],
+        'lpos': [],
+        'fsize': []
+    }
 
     if len(sentence_data['text']) < 1:
         return result
@@ -127,6 +156,18 @@ def make_sentence_block(sentence_data: dict, threshold:float=1.5) -> dict:
     line_height = [sentence_data['fsize'][0]]
     base_height = block_height
 
+    def flush_block():
+        nonlocal block_string, block_left, block_top, block_width, block_height, line, line_pos, line_height
+        result['text'].append(block_string)
+        result['left'].append(block_left)
+        result['top'].append(block_top)
+        result['width'].append(block_width)
+        result['height'].append(block_height)
+        result['line'].append(line)
+        result['lpos'].append(line_pos)
+        result['fsize'].append(line_height)
+
+
     for i in range(1, len(sentence_data['text'])):
         text = sentence_data['text'][i]
         x = sentence_data['left'][i]
@@ -135,18 +176,11 @@ def make_sentence_block(sentence_data: dict, threshold:float=1.5) -> dict:
         h = sentence_data['height'][i]
         fsize = sentence_data['fsize'][i]
 
-        distance = sub_func.calculate_distance(block_left, block_top+block_height, x,y)
+        distance = calculate_distance(block_left, block_top+block_height, x,y)
 
         # Construct a paragraph based on the distance between the positions of the starting words of the two sentences
         if h*threshold < base_height or distance > base_height*threshold:
-            result['text'].append(block_string)
-            result['left'].append(block_left)
-            result['top'].append(block_top)
-            result['width'].append(block_width)
-            result['height'].append(block_height)
-            result['line'].append(line)
-            result['lpos'].append(line_pos)
-            result['fsize'].append(line_height)
+            flush_block()
 
             block_string = text
             block_left = x
@@ -168,43 +202,45 @@ def make_sentence_block(sentence_data: dict, threshold:float=1.5) -> dict:
             line_height.append(fsize)
 
     # Finally save the remaining value
-    result['text'].append(block_string)
-    result['left'].append(block_left)
-    result['top'].append(block_top)
-    result['width'].append(block_width)
-    result['height'].append(block_height)
-    result['line'].append(line)
-    result['lpos'].append(line_pos)
-    result['fsize'].append(line_height)
+    flush_block()
     
     return result
 
 
 def distribute_text(text: str, line_num: int, line_width: list) -> list:
-    '''
-    Split one string to number of line and widths of each line
-    '''
-    token = text.split()
-    token_len = len(token)
+    """
+    Distribute a text string into multiple lines according to specified line widths.
 
-    # Find proportions proportional to line width
-    line_rato = list(map(lambda x : round(x/sum(line_width), 2), line_width))
+    The text is split into words, and the number of words allocated to each line is determined
+    by the proportional width of that line. The final line receives any remaining words.
 
-    div_text = []
+    Args:
+        text (str): The text to distribute.
+        line_num (int): The number of lines to divide the text into.
+        line_width (list): A list of integers representing the widths for each line.
+
+    Returns:
+        list: A list of strings, each representing a line of text.
+    """
+    tokens = text.split()
+    total_tokens_length = len(tokens)
+    total_width = sum(line_width)
+
+    # Calculate the proportion of tokens for each line.
+    line_ratios = [round(w / total_width, 2) for w in line_width]
+
+    distributed_lines = []
 
     # Divide one sentence into multiple lines to match the line width ratio
     for i in range(line_num):
-        sentence_buffer = ''
-        max_voca = int(token_len * line_rato[i])
-
-        if i == (line_num-1):
-            while len(token) > 0:
-                sentence_buffer += token.pop(0) + ' '
+        if i == line_num - 1:
+            line_tokens = tokens
+            tokens = []
         else:
-            for i in range(max_voca):
-                if len(token) > 0:
-                    sentence_buffer += token.pop(0) + ' '
+            num_tokens = int(total_tokens_length * line_ratios[i])
+            line_tokens = tokens[:num_tokens]
+            tokens = tokens[num_tokens:]
 
-        div_text.append(sentence_buffer)
+        distributed_lines.append(" ".join(line_tokens))
     
-    return div_text
+    return distributed_lines
