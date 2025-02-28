@@ -9,14 +9,11 @@ Argos Translate is Open-source offline translation library written in Python
 https://github.com/argosopentech/argos-translate
 '''
 
-# Value to verify that the required package is installed
 VALID_CHECK = False
 
 def valid_check(package_num: str= None, \
                 all: bool= False) -> None:
-    '''
-    Verify installation of packages for offline translation
-    '''
+
     global VALID_CHECK
 
     # load and check language pack
@@ -30,14 +27,18 @@ def valid_check(package_num: str= None, \
     elif package_num != None:
         argostranslate.package.install_from_path(available_packages[package_num].download())
 
-    # Temporary installation of Korean-English(26 and 48)
     else:
         installed_languages = argostranslate.translate.get_installed_languages()
         install_lang = list(map(str, installed_languages))
 
+        package_num = []
+        for idx, pack_name in enumerate(available_packages):
+            if str(pack_name).find("Korean") != -1:
+                package_num.append(idx)
+
         if not('English' in install_lang and 'Korean' in install_lang):
-            argostranslate.package.install_from_path(available_packages[26].download())
-            argostranslate.package.install_from_path(available_packages[48].download())
+            for num in package_num:
+                argostranslate.package.install_from_path(available_packages[num].download())
 
     VALID_CHECK = True
     return
@@ -47,10 +48,7 @@ def text_translate(text: str, \
                    dest: str, \
                    src: str, \
                    detail: bool= False) -> str:
-    '''
-    Translate given text, 
-    Required text, target language and language of text
-    '''
+
     global VALID_CHECK
 
     if not VALID_CHECK:
