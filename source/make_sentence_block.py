@@ -1,10 +1,19 @@
-import sub_func
+import math
 
 '''
 Source code that gathers fragmented words to form sentences and paragraphs
 Close words are grouped together to form a sentence
 Create a paragraph by grouping the surrounding sentences based on the position of the starting word of the sentence
 '''
+
+
+def calculate_distance(x1: int, y1: int, x2: int, y2: int) -> float:
+    '''
+    Find Euclidean distance, 
+    Using 2 coordinates
+    '''
+    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
 
 def find_sentence(ocr_data: dict, threshold:int=50) -> dict:
     '''
@@ -135,7 +144,7 @@ def make_sentence_block(sentence_data: dict, threshold:float=1.5) -> dict:
         h = sentence_data['height'][i]
         fsize = sentence_data['fsize'][i]
 
-        distance = sub_func.calculate_distance(block_left, block_top+block_height, x,y)
+        distance = calculate_distance(block_left, block_top+block_height, x,y)
 
         # Construct a paragraph based on the distance between the positions of the starting words of the two sentences
         if h*threshold < base_height or distance > base_height*threshold:
