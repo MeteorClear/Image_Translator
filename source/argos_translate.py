@@ -12,33 +12,43 @@ https://github.com/argosopentech/argos-translate
 # global flag: check for installed language pack
 VALID_CHECK = False
 
-def valid_check(package_num: str= None, \
-                all: bool= False) -> None:
+
+def find_package_index(package_language: str) -> list:
+    available_packages = argostranslate.package.get_available_packages()
+    package_index = []
+
+    for idx, pack_name in enumerate(available_packages):
+        if str(pack_name).find(package_language) != -1:
+            package_index.append(idx)
+
+    return package_index
+
+
+def valid_check(package_language: str= None, \
+                install_all: bool= False) -> None:
 
     global VALID_CHECK
 
     try:
-        # load and check language pack
         argostranslate.package.update_package_index()
         available_packages = argostranslate.package.get_available_packages()
+        installed_languages = argostranslate.translate.get_installed_languages()
+        installed_languages_list = list(map(str, installed_languages))
         
         # install all package (not recommended)
-        if all:
+        if install_all:
             argostranslate.argospm.install_all_packages()
 
-        elif package_num != None:
-            argostranslate.package.install_from_path(available_packages[package_num].download())
+        elif package_language != None:
+            package_index = find_package_index(package_language)
+
+            for num in package_index:
+                argostranslate.package.install_from_path(available_packages[num].download())
 
         else:
-            installed_languages = argostranslate.translate.get_installed_languages()
-            install_lang = list(map(str, installed_languages))
+            package_index = find_package_index("Korean")
 
-            package_num = []
-            for idx, pack_name in enumerate(available_packages):
-                if str(pack_name).find("Korean") != -1:
-                    package_num.append(idx)
-
-            if not('English' in install_lang and 'Korean' in install_lang):
+            if not('English' in installed_languages_list and 'Korean' in installed_languages_list):
                 for num in package_num:
                     argostranslate.package.install_from_path(available_packages[num].download())
 
