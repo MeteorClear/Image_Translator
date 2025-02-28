@@ -50,15 +50,14 @@ def valid_check(package_language: str= None, \
     try:
         argostranslate.package.update_package_index()
         available_packages = argostranslate.package.get_available_packages()
-        installed_languages = argostranslate.translate.get_installed_languages()
-        installed_languages_list = list(map(str, installed_languages))
+        installed_languages = list(map(str, argostranslate.translate.get_installed_languages()))
         
         # Install all available packages. (not recommended)
         if install_all:
             argostranslate.argospm.install_all_packages()
 
         # Install packages for the specified language.
-        elif package_language != None:
+        elif package_language is not None:
             package_index = find_package_index(package_language)
 
             for num in package_index:
@@ -68,8 +67,8 @@ def valid_check(package_language: str= None, \
         else:
             package_index = find_package_index("Korean")
 
-            if not('English' in installed_languages_list and 'Korean' in installed_languages_list):
-                for num in package_num:
+            if not('English' in installed_languages and 'Korean' in installed_languages):
+                for num in package_index:
                     argostranslate.package.install_from_path(available_packages[num].download())
 
         # Update global flag, installation is complete.
