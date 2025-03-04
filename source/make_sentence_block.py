@@ -53,10 +53,10 @@ def find_sentence(ocr_data: dict, threshold:int = 50) -> dict:
     sentence_top = -1
     sentence_width = -1
     sentence_height = -1
-    sentence_fsize = []
+    sentence_font_size = []
 
     def flush_sentence():
-        nonlocal sentence_string, sentence_left, sentence_top, sentence_width, sentence_height, sentence_fsize
+        nonlocal sentence_string, sentence_left, sentence_top, sentence_width, sentence_height, sentence_font_size
 
         if len(sentence_string.strip()) > 1:
             result['text'].append(sentence_string.strip())
@@ -64,52 +64,40 @@ def find_sentence(ocr_data: dict, threshold:int = 50) -> dict:
             result['top'].append(sentence_top)
             result['width'].append(sentence_width)
             result['height'].append(sentence_height)
-            result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_fsize), sentence_fsize))) / len(sentence_fsize)**2))
+            result['fsize'].append(int(sum(list(map(lambda x : x*len(sentence_font_size), sentence_font_size))) / len(sentence_font_size)**2))
 
             sentence_string = ''
             sentence_left = -1
             sentence_top = -1
             sentence_width = -1
             sentence_height = -1
-            sentence_fsize = []
+            sentence_font_size = []
 
-
-    for i in range(len(ocr_data['text'])):
+    num_words = len(ocr_data.get('text', []))
+    for i in range(num_words):
         lv = ocr_data['level'][i]
         x = ocr_data['left'][i]
         y = ocr_data['top'][i]
         w = ocr_data['width'][i]
         h = ocr_data['height'][i]
-
         conf = int(ocr_data['conf'][i])
-        text = ocr_data['text'][i]
-        text = text.strip()
+        word = ocr_data['text'][i].strip()
 
         # Initialize when OCR result level drops to 4
         if lv == 4:
             flush_sentence()
 
         # Save if the word's location is close to the previous word
-        elif lv == 5:
-            if conf > threshold and len(text) > 0:
-                if sentence_left != -1 and sentence_left+sentence_width+w < x:
-                    flush_sentence()
+        elif lv == 5 and conf > threshold and word:
+            if sentence_left != -1 and sentence_left+sentence_width+w < x:
+                flush_sentence()
 
-                    sentence_string += ' ' + text
-                    sentence_left = x if sentence_left==-1 else min(sentence_left, x)
-                    sentence_top = y if sentence_top==-1 else min(sentence_top, y)
-                    sentence_width = w if sentence_width==-1 else max(sentence_left+sentence_width, x+w)-sentence_left
-                    sentence_height = h if sentence_height==-1 else max(sentence_height, h)
-                    sentence_fsize.append(h)
-
-                # Save words if they are consecutive
-                else:
-                    sentence_string += ' ' + text
-                    sentence_left = x if sentence_left==-1 else min(sentence_left, x)
-                    sentence_top = y if sentence_top==-1 else min(sentence_top, y)
-                    sentence_width = w if sentence_width==-1 else max(sentence_left+sentence_width, x+w)-sentence_left
-                    sentence_height = h if sentence_height==-1 else max(sentence_height, h)
-                    sentence_fsize.append(h)
+            sentence_string += ' ' + word
+            sentence_left = x if sentence_left==-1 else min(sentence_left, x)
+            sentence_top = y if sentence_top==-1 else min(sentence_top, y)
+            sentence_width = w if sentence_width==-1 else max(sentence_left+sentence_width, x+w)-sentence_left
+            sentence_height = h if sentence_height==-1 else max(sentence_height, h)
+            sentence_font_size.append(h)
 
     # Finally save the remaining value
     flush_sentence()
@@ -174,7 +162,7 @@ def make_sentence_block(sentence_data: dict, threshold: float = 1.5) -> dict:
         y = sentence_data['top'][i]
         w = sentence_data['width'][i]
         h = sentence_data['height'][i]
-        fsize = sentence_data['fsize'][i]
+        font_size = sentence_data['fsize'][i]
 
         distance = calculate_distance(block_left, block_top+block_height, x,y)
 
@@ -189,7 +177,7 @@ def make_sentence_block(sentence_data: dict, threshold: float = 1.5) -> dict:
             block_height = h
             line = 1
             line_pos = [(block_left, block_top, block_width, block_height)]
-            line_height = [fsize]
+            line_height = [font_size]
             base_height = h
 
         else:
@@ -199,7 +187,7 @@ def make_sentence_block(sentence_data: dict, threshold: float = 1.5) -> dict:
             block_height = max(block_top+block_height, y+h)-block_top
             line += 1
             line_pos.append((x, y, w, h))
-            line_height.append(fsize)
+            line_height.append(font_size)
 
     # Finally save the remaining value
     flush_block()
