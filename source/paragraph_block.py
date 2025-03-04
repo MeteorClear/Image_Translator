@@ -6,10 +6,10 @@ import make_sentence_block
 import argos_translate
 import google_translate_lib
 
-'''
-Class for paragraph and internal sentence control
-Controls the sentences inside the paragraph and performs color extraction and translation
-'''
+"""
+Class for paragraph and sentence control.
+Manages paragraph blocks by grouping sentences, extracting colors, and performing translations.
+"""
 
 class ParagraphBlock:
     '''
@@ -42,10 +42,21 @@ class ParagraphBlock:
                  lpos: list, fsize: list, \
                  color_weight:int=30, \
                  translator_mode:str='argos') -> None:
-        '''
-        Receive information of block
-        Color weight is the value added to the font color
-        '''
+        """
+        Initialize a paragraph block with its bounding box, text content, and settings.
+
+        Args:
+            x (int): X-coordinate of the block.
+            y (int): Y-coordinate of the block.
+            w (int): Width of the block.
+            h (int): Height of the block.
+            text (str): The block's text.
+            line (int): Number of lines in the block.
+            lpos (list): List of line positions as tuples (x, y, width, height).
+            fsize (list): List of font sizes for each line.
+            color_weight (int, optional): Value to adjust the font color. Defaults to 30.
+            translator_mode (str, optional): Translation mode ('argos' or 'google_lib'). Defaults to 'argos'.
+        """
         self.x_ = x
         self.y_ = y
         self.w_ = w
@@ -60,11 +71,15 @@ class ParagraphBlock:
         return
     
     def color_find(self, image: np.ndarray) -> None:
-        '''
-        Extracts background color and character color of block from a given image
-        Works differently depending on the number of lines in the block
-        '''
-        # Works differently depending on the number of sentences in the paragraph
+        """
+        Extract background and font colors from the block using the provided image.  
+
+        Uses a different method for single-line and multi-line blocks.  
+        You can check the color extracted through `get_color()`
+
+        Args:
+            image (np.ndarray): The full image array to find color.
+        """
         if self.line_ > 1:
             self.multi_line_init(image)
         else:
@@ -74,9 +89,9 @@ class ParagraphBlock:
     
 
     def single_line_init(self, image: np.ndarray) -> None:
-        '''
-        Used when there is only one line in a paragraph
-        '''
+        """
+        Extract colors for a single-line block.
+        """
         roi = erase_text.find_roi(image, self.x_, self.y_, self.w_, self.h_)
         cluster = erase_text.make_cluster(roi)
 
@@ -90,9 +105,9 @@ class ParagraphBlock:
     
 
     def multi_line_init(self, image: np.ndarray) -> None:
-        '''
-        Used when a paragraph has two or more lines
-        '''
+        """
+        Extract colors for a multi-line block by processing each line separately.
+        """
         bg_colors = []
         ft_colors = []
         for n_lines in range(self.line_):
@@ -114,9 +129,18 @@ class ParagraphBlock:
     
 
     def text_translate(self, src_lang:str='en', dest_lang:str='ko', translator_mode:str=None) -> None:
-        '''
-        Translates text in paragraphs into target language
-        '''
+        """
+        Translate the block's text into the target language.
+
+        Uses either the argos_translate or google_translate_lib based on translator_mode.  
+        For multi-line blocks, splits the translated text to match line widths.  
+        You can check the translated text through `get_translated_text()`
+
+        Args:
+            src_lang (str, optional): Source language code. Defaults to 'en'.
+            dest_lang (str, optional): Target language code. Defaults to 'ko'.
+            translator_mode (str, optional): If provided, overrides the block's translator mode.
+        """
         self.src_lang_ = src_lang
         self.dest_lang_ = dest_lang
         if translator_mode is not None:
@@ -144,28 +168,36 @@ class ParagraphBlock:
 
 
     def get_position(self) -> tuple:
-        '''
-        Returns the coordinate of the paragraph block,
-        (x, y, w, h)
-        '''
+        """
+        Return the bounding box of the paragraph block as (x, y, width, height).
+
+        Returns:
+            tuple: The paragraph block position as (x, y, width, height)
+        """
         position = (self.x_, self.y_, self.w_, self.h_)
         
         return position
     
 
     def get_translated_text(self) -> tuple:
-        '''
-        Returns Number of lines in paragraph, the coordinates of each line, and translated text
-        '''
+        """
+        Return the number of lines, line positions, and the translated text.
+
+        Returns:
+            tuple: The translated sentence information inside block as (number of lines, line positions, translated text)
+        """
         result = (self.line_, self.lpos_, self.trans_text_)
 
         return result
     
 
     def get_color(self) -> tuple:
-        '''
-        Returns the extracted background color and text color
-        '''
+        """
+        Return the extracted background and font colors.
+
+        Returns:
+            tuple: The extracted colors as (background color, font color)
+        """
         result = (self.background_color_, self.font_color_)
 
         return result
