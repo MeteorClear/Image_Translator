@@ -73,26 +73,26 @@ def find_sentence(ocr_data: dict, threshold:int = 50) -> dict:
             sentence_height = -1
             sentence_font_size = []
 
-
-    for i in range(len(ocr_data['text'])):
+    num_words = len(ocr_data.get('text', []))
+    for i in range(num_words):
         lv = ocr_data['level'][i]
         x = ocr_data['left'][i]
         y = ocr_data['top'][i]
         w = ocr_data['width'][i]
         h = ocr_data['height'][i]
         conf = int(ocr_data['conf'][i])
-        text = ocr_data['text'][i].strip()
+        word = ocr_data['text'][i].strip()
 
         # Initialize when OCR result level drops to 4
         if lv == 4:
             flush_sentence()
 
         # Save if the word's location is close to the previous word
-        elif lv == 5 and conf > threshold and len(text) > 0:
+        elif lv == 5 and conf > threshold and word:
             if sentence_left != -1 and sentence_left+sentence_width+w < x:
                 flush_sentence()
 
-            sentence_string += ' ' + text
+            sentence_string += ' ' + word
             sentence_left = x if sentence_left==-1 else min(sentence_left, x)
             sentence_top = y if sentence_top==-1 else min(sentence_top, y)
             sentence_width = w if sentence_width==-1 else max(sentence_left+sentence_width, x+w)-sentence_left
