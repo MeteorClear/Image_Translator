@@ -12,30 +12,6 @@ Manages paragraph blocks by grouping sentences, extracting colors, and performin
 """
 
 class ParagraphBlock:
-    '''
-    Class on paragraph blocks,
-    Receive information of block, 
-    translate text and save,
-    Color extraction included
-    '''
-    x_ = -1
-    y_ = -1
-    w_ = -1
-    h_ = -1
-    text_ = ''
-    line_ = -1
-    lpos_ = []
-    fsize_ = []
-    color_weight_ = 0
-    translator_mode_ = None
-
-    background_color_ = None
-    font_color_ = None
-    trans_text_ = None
-    src_lang_ = None
-    dest_lang_ = None
-
-
     def __init__(self, \
                  x: int, y: int, w: int, h: int, \
                  text: str, line: int, \
@@ -59,14 +35,20 @@ class ParagraphBlock:
         """
         self.x_ = x
         self.y_ = y
-        self.w_ = w
-        self.h_ = h
+        self.width_ = w
+        self.height_ = h
         self.text_ = text
         self.line_ = line
-        self.lpos_ = lpos
-        self.fsize_ = fsize
+        self.line_positions_ = lpos
+        self.font_size_ = fsize
         self.color_weight_ = color_weight
         self.translator_mode_ = translator_mode
+
+        self.background_color_ = None
+        self.font_color_ = None
+        self.translated_text_ = None
+        self.src_lang_ = None
+        self.dest_lang_ = None
 
         return
     
@@ -92,7 +74,7 @@ class ParagraphBlock:
         """
         Extract colors for a single-line block.
         """
-        roi = erase_text.find_roi(image, self.x_, self.y_, self.w_, self.h_)
+        roi = erase_text.find_roi(image, self.x_, self.y_, self.width_, self.height_)
         cluster = erase_text.make_cluster(roi)
 
         self.background_color_ = [erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=0)]
@@ -111,7 +93,7 @@ class ParagraphBlock:
         bg_colors = []
         ft_colors = []
         for n_lines in range(self.line_):
-            line_x, line_y, line_w, line_h = self.lpos_[n_lines]
+            line_x, line_y, line_w, line_h = self.line_positions_[n_lines]
 
             roi = erase_text.find_roi(image, line_x, line_y, line_w, line_h)
             cluster = erase_text.make_cluster(roi)
@@ -146,23 +128,21 @@ class ParagraphBlock:
         if translator_mode is not None:
             self.translator_mode_ = translator_mode
         
-        # Translating sentences inside paragraphs into target languages
         if self.translator_mode_ == "google_lib":
             translated_text = google_translate_lib.text_translate(text=self.text_, src=self.src_lang_, dest=self.dest_lang_)
         else:
             translated_text = argos_translate.text_translate(text=self.text_, src=self.src_lang_, dest=self.dest_lang_)
 
-        # Separate translated sentences to fit the lines in the paragraph
         if self.line_ > 1:
             line_width = []
 
-            for line_pos in self.lpos_:
+            for line_pos in self.line_positions_:
                 line_width.append(line_pos[2])
             split_text = make_sentence_block.distribute_text(translated_text, self.line_, line_width)
 
-            self.trans_text_ = split_text
+            self.translated_text_ = split_text
         else:
-            self.trans_text_ = [translated_text]
+            self.translated_text_ = [translated_text]
 
         return
 
@@ -174,7 +154,7 @@ class ParagraphBlock:
         Returns:
             tuple: The paragraph block position as (x, y, width, height)
         """
-        position = (self.x_, self.y_, self.w_, self.h_)
+        position = (self.x_, self.y_, self.width_, self.height_)
         
         return position
     
@@ -186,7 +166,7 @@ class ParagraphBlock:
         Returns:
             tuple: The translated sentence information inside block as (number of lines, line positions, translated text)
         """
-        result = (self.line_, self.lpos_, self.trans_text_)
+        result = (self.line_, self.line_positions_, self.translated_text_)
 
         return result
     
