@@ -125,6 +125,7 @@ class ParagraphBlock:
         """
         self.src_lang_ = src_lang
         self.dest_lang_ = dest_lang
+        
         if translator_mode is not None:
             self.translator_mode_ = translator_mode
         
@@ -134,13 +135,8 @@ class ParagraphBlock:
             translated_text = argos_translate.text_translate(text=self.text_, src=self.src_lang_, dest=self.dest_lang_)
 
         if self.line_ > 1:
-            line_width = []
-
-            for line_pos in self.line_positions_:
-                line_width.append(line_pos[2])
-            split_text = make_sentence_block.distribute_text(translated_text, self.line_, line_width)
-
-            self.translated_text_ = split_text
+            line_width = [line_pos[2] for line_pos in self.line_positions_]
+            self.translated_text_ = make_sentence_block.distribute_text(translated_text, self.line_, line_width)
         else:
             self.translated_text_ = [translated_text]
 
