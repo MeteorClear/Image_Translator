@@ -92,20 +92,20 @@ class ParagraphBlock:
         bg_colors = []
         ft_colors = []
         
-        for n_lines in range(self.line_):
-            line_x, line_y, line_w, line_h = self.line_positions_[n_lines]
+        for position in self.line_positions_:
+            line_x, line_y, line_w, line_h = position
 
             roi = erase_text.find_roi(image, line_x, line_y, line_w, line_h)
             cluster = erase_text.make_cluster(roi)
 
-            bg_colors.append(erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=0))
+            background_color = erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=0)
+            bg_colors.append(background_color)
 
-            font_color = erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=1)
-            font_color = tuple(font_color)
+            font_color = tuple(erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=1))
             ft_colors.append(erase_text.correction_color(font_color, self.color_weight_))
 
-        self.background_color_ = bg_colors.copy()
-        self.font_color_ = ft_colors.copy()
+        self.background_color_ = bg_colors
+        self.font_color_ = ft_colors
 
         return
     
