@@ -76,10 +76,10 @@ class ParagraphBlock:
         roi = erase_text.find_roi(image, self.x_, self.y_, self.width_, self.height_)
         cluster = erase_text.make_cluster(roi)
 
-        self.background_color_ = [erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=0)]
+        background_color = erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=0)
+        self.background_color_ = [background_color]
 
-        font_color = erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=1)
-        font_color = tuple(font_color)
+        font_color = tuple(erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=1))
         self.font_color_ = [erase_text.correction_color(font_color, self.color_weight_)]
 
         return
@@ -91,6 +91,7 @@ class ParagraphBlock:
         """
         bg_colors = []
         ft_colors = []
+        
         for n_lines in range(self.line_):
             line_x, line_y, line_w, line_h = self.line_positions_[n_lines]
 
@@ -113,8 +114,10 @@ class ParagraphBlock:
         """
         Distribute a text string into multiple lines according to specified line widths.
 
-        The text is split into words, and the number of words allocated to each line is determined
-        by the proportional width of that line. The final line receives any remaining words.
+        The text is split into words, 
+        and the number of words allocated to each line is determined
+        by the proportional width of that line.  
+        The final line receives any remaining words.
 
         Args:
             text (str): The text to distribute.
