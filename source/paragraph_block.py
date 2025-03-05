@@ -110,7 +110,7 @@ class ParagraphBlock:
         return
     
 
-    def distribute_text(text: str, line_num: int, line_width: list) -> list:
+    def distribute_text(self, text: str, line_num: int, line_width: list) -> list:
         """
         Distribute a text string into multiple lines according to specified line widths.
 
