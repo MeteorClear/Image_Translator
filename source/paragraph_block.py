@@ -1,7 +1,6 @@
 import numpy as np
 
 import erase_text
-import make_sentence_block
 
 import argos_translate
 import google_translate_lib
@@ -110,6 +109,45 @@ class ParagraphBlock:
         return
     
 
+    def distribute_text(text: str, line_num: int, line_width: list) -> list:
+        """
+        Distribute a text string into multiple lines according to specified line widths.
+
+        The text is split into words, and the number of words allocated to each line is determined
+        by the proportional width of that line. The final line receives any remaining words.
+
+        Args:
+            text (str): The text to distribute.
+            line_num (int): The number of lines to divide the text into.
+            line_width (list): A list of integers representing the widths for each line.
+
+        Returns:
+            list: A list of strings, each representing a line of text.
+        """
+        tokens = text.split()
+        total_tokens_length = len(tokens)
+        total_width = sum(line_width)
+
+        # Calculate the proportion of tokens for each line.
+        line_ratios = [round(w / total_width, 2) for w in line_width]
+
+        distributed_lines = []
+
+        # Divide one sentence into multiple lines to match the line width ratio
+        for i in range(line_num):
+            if i == line_num - 1:
+                line_tokens = tokens
+                tokens = []
+            else:
+                num_tokens = int(total_tokens_length * line_ratios[i])
+                line_tokens = tokens[:num_tokens]
+                tokens = tokens[num_tokens:]
+
+            distributed_lines.append(" ".join(line_tokens))
+        
+        return distributed_lines
+    
+
     def text_translate(self, src_lang:str='en', dest_lang:str='ko', translator_mode:str=None) -> None:
         """
         Translate the block's text into the target language.
@@ -125,7 +163,7 @@ class ParagraphBlock:
         """
         self.src_lang_ = src_lang
         self.dest_lang_ = dest_lang
-        
+
         if translator_mode is not None:
             self.translator_mode_ = translator_mode
         
@@ -136,7 +174,7 @@ class ParagraphBlock:
 
         if self.line_ > 1:
             line_width = [line_pos[2] for line_pos in self.line_positions_]
-            self.translated_text_ = make_sentence_block.distribute_text(translated_text, self.line_, line_width)
+            self.translated_text_ = self.distribute_text(translated_text, self.line_, line_width)
         else:
             self.translated_text_ = [translated_text]
 
