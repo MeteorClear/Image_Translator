@@ -218,3 +218,13 @@ class ParagraphBlock:
         result = (self.background_color_, self.font_color_)
 
         return result
+    
+
+    def get_font_size(self) -> int:
+        """
+        Return the font size.
+
+        Returns:
+            int: The font size.
+        """
+        return self.font_size_
