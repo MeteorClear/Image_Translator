@@ -151,7 +151,7 @@ class ParagraphBlock:
         return distributed_lines
     
 
-    def text_translate(self, src_lang:str='en', dest_lang:str='ko', translator_mode:str=None) -> None:
+    def text_translate(self, src_lang: str = 'en', dest_lang: str = 'ko', translator_mode: str = None) -> None:
         """
         Translate the block's text into the target language.
 
