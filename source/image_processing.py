@@ -143,7 +143,7 @@ class ProcessingBlock:
             block.text_translate(src_lang=self.src_lang_, dest_lang=self.dest_lang_)
             block_line, block_lpos, block_text = block.get_translated_text()
             background_color, font_color = block.get_color()
-            font_size = block.fsize_
+            font_size = block.get_font_size()
 
             # Works with every sentence contained in a paragraph
             for i in range(block_line):
