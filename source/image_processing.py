@@ -106,10 +106,10 @@ class ProcessingBlock:
         if self.ocr_data_ is None:
             self.ocr_process()
 
-        # Estimate sentence structure
+        # Group OCR data into sentences based on the confidence threshold
         sentence_data = make_sentence_block.find_sentence(self.ocr_data_, self.sentence_threshold_)
 
-        # Estimate paragraph structure 
+        # Group sentences into paragraphs/text blocks using the block threshold
         self.block_data_ = make_sentence_block.make_sentence_block(sentence_data, threshold=self.block_threshold_)
 
         return self.block_data_
@@ -132,13 +132,12 @@ class ProcessingBlock:
             y = self.block_data_['top'][i]
             w = self.block_data_['width'][i]
             h = self.block_data_['height'][i]
-
             text = self.block_data_['text'][i]
             line = self.block_data_['line'][i]
             lpos = self.block_data_['lpos'][i]
             fsize = self.block_data_['fsize'][i]
 
-            # Forming a list of paragraph objects
+            # Create a ParagraphBlock instance for the current text block
             self.blocks_.append(paragraph_block.ParagraphBlock(x=x, y=y, w=w, h=h, \
                                                                text=text, \
                                                                line=line, \
