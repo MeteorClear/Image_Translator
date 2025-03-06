@@ -6,18 +6,30 @@ from PIL import ImageFont, ImageDraw, Image
 import make_sentence_block
 import paragraph_block
 
-'''
-Class for performing OCR and other functions on images
-Perform OCR, sentence and paragraph re-collect, paragraph object control
-It is estimated that the object can be reused, but not tried
-Can require a lot of resources
-'''
 
 class ProcessingBlock:
-    '''
-    Image processing by receiving image path and setting value,
-    It recognizes through ocr, translates, and puts text in the same position 
-    '''
+    """
+    A class for processing images by performing OCR, 
+    reassembling recognized text into sentences and paragraphs, translating the text, 
+    and rendering the translated text back into the image.
+
+    Attributes:
+        image_path_ (str): Path to the input image.
+        save_path_ (str): Directory or path prefix for saving the processed image.
+        src_lang_ (str): Source language code used for OCR and translation.
+        dest_lang_ (str): Destination language code for translation.
+        font_type_ (str): Path to the TrueType font file used for rendering text.
+        font_weight_ (float): Scaling factor for font size to ensure proper text rendering.
+        sentence_threshold_ (int): Minimum OCR confidence threshold for processing individual sentences.
+        block_threshold_ (float): Threshold used to group sentences into text blocks (paragraphs).
+        translator_mode_ (str): Mode or API choice for translation (e.g., 'argos').
+        image_ (np.ndarray): Original image loaded via OpenCV.
+        sub_image_ (np.ndarray): Copy of the original image used for drawing visualizations.
+        result_image_ (np.ndarray): Copy of the image where the translated text is rendered.
+        ocr_data_ (dict): Dictionary containing raw OCR data returned by pytesseract.
+        block_data_ (dict): Dictionary containing grouped text block data.
+        blocks_ (list): List of ParagraphBlock objects created from the grouped text.
+    """
     image_path_ = ".\\test1.jpg"
     save_path_ = ''
     src_lang_ = ''
