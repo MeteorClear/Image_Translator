@@ -11,6 +11,37 @@ Manages paragraph blocks by grouping sentences, extracting colors, and performin
 """
 
 class ParagraphBlock:
+    """
+    Represents a paragraph block extracted from an image containing text.
+
+    This class encapsulates the attributes and functionalities related to a detected text block from an image.
+    It stores the bounding box, original text, line layout information, and font sizes for each line. 
+    In addition, it provides methods to extract and adjust background and font colors from the image, 
+    distribute translated text across multiple lines according to the measured line widths, 
+    and perform text translation using an external translation service.
+
+    The class is designed to be used in the Tesseract OCR.
+    where the detected text from an image is post-processed, translated, 
+    and then rendered back onto the image with correct styling and positioning.
+
+    Attributes:
+        x_ (int): The X-coordinate of the top-left corner of the paragraph block.
+        y_ (int): The Y-coordinate of the top-left corner of the paragraph block.
+        width_ (int): The width of the paragraph block.
+        height_ (int): The height of the paragraph block.
+        text_ (str): The original text content of the block.
+        line_ (int): The number of lines contained in the text block.
+        line_positions_ (list): A list of tuples, where each tuple contains the (x, y, width, height) for a line.
+        font_size_ (list): A list of font sizes corresponding to each line in the block.
+        color_weight_ (int): A weight factor used to adjust or correct the extracted font color.
+        translator_mode_ (str): The translation mode to be used ("argos" or "google_lib").
+        background_color_ (list or None): The detected background color(s) for the block after color extraction.
+        font_color_ (list or None): The adjusted font color(s) for the block after color extraction.
+        translated_text_ (list or None): The translated text distributed across lines.
+        src_lang_ (str or None): The source language code used for translation.
+        dest_lang_ (str or None): The target language code used for translation.
+    """
+
     def __init__(self, \
                  x: int, y: int, w: int, h: int, \
                  text: str, line: int, \
