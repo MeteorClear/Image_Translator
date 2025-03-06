@@ -62,9 +62,20 @@ class ProcessingBlock:
                  sentence_threshold: int= 50, \
                  block_threshold: float= 1.5, \
                  translator_mode: str= "argos") -> None:
-        '''
-        Read images using the inputed path
-        '''
+        """
+        Initialize the class with the specified parameters and load the image.
+
+        Args:
+            image_path (str): Path to the input image.
+            save_path (str, optional): Directory or file path prefix for saving results. Defaults to ".\\result".
+            src_lang (str, optional): Source language code for OCR and translation. Defaults to "en".
+            dest_lang (str, optional): Destination language code for translation. Defaults to "ko".
+            font_type (str, optional): Path to the font file used for text rendering. Defaults to "fonts\\gulim.ttc".
+            font_weight (float, optional): Scaling factor for font size. Defaults to 1.2.
+            sentence_threshold (int, optional): Minimum OCR confidence threshold for sentence processing. Defaults to 50.
+            block_threshold (float, optional): Threshold for grouping sentences into paragraphs. Defaults to 1.5.
+            translator_mode (str, optional): Mode used for translation (e.g., 'argos'). Defaults to "argos".
+        """
         self.image_path_ = image_path
         self.save_path_ = save_path
         self.src_lang_ = src_lang
@@ -85,19 +96,29 @@ class ProcessingBlock:
     
 
     def ocr_process(self) -> dict:
-        '''
-        Use the Tesserect OCR engine to extract text and store it in dictionary form
-        '''
-        self.ocr_data_ = pytesseract.image_to_data(self.image_, \
-                                                   output_type=pytesseract.Output.DICT)
+        """
+        Perform OCR on the input image using Tesseract OCR.
+
+        This method extracts text and positional data from the image and stores it as dictionary.
+
+        Returns:
+            dict: OCR data containing recognized text, bounding box coordinates, and confidence values.
+        """
+        self.ocr_data_ = pytesseract.image_to_data(self.image_, output_type=pytesseract.Output.DICT)
 
         return self.ocr_data_
     
 
     def recollection_text(self) -> dict:
-        '''
-        Recombine data extracted through OCR into sentences and paragraphs
-        '''
+        """
+        Reassemble OCR output into structured sentences and paragraphs.
+
+        This method first ensures that OCR data is available, 
+        then uses helper functions to group the OCR results into sentences and subsequently into text blocks (paragraphs).
+
+        Returns:
+            dict: A dictionary containing grouped text block data, including keys like ('text', 'left', 'top', 'width', 'height', 'line', 'lpos', and 'fsize'.)
+        """
         if self.ocr_data_ is None:
             self.ocr_process()
 
@@ -111,9 +132,12 @@ class ProcessingBlock:
     
 
     def build_blocks(self) -> None:
-        '''
-        Create paragraph objects using recombined data
-        '''
+        """
+        Build paragraph objects from the grouped text block data.
+
+        For each text block in the block data, this method creates a ParagraphBlock object
+        with its associated positional and font size data, and stores it in the blocks_ list.
+        """
         self.blocks_ = []
 
         if self.block_data_ is None:
@@ -142,9 +166,16 @@ class ProcessingBlock:
     
 
     def processing_run(self) -> np.ndarray:
-        '''
-        Use paragraph objects to insert translated text into an image
-        '''
+        """
+        Process the image by translating and rendering the text blocks.
+
+        This method iterates through each ParagraphBlock, performs color detection, translates the text,
+        clears the original text region by drawing a filled rectangle with the background color, and then
+        renders the translated text using the specified font and size.
+
+        Returns:
+            np.ndarray: The resulting image with the translated text rendered.
+        """
         if self.block_data_ is None:
             self.recollection_text()
             self.build_blocks()
@@ -188,6 +219,14 @@ class ProcessingBlock:
     
 
     def draw_process(self) -> None:
+        """
+        Draw bounding boxes for OCR results and grouped text blocks for visualization purposes.
+
+        This method draws:
+          - Green rectangles around individual OCR-detected text components that meet the confidence threshold.
+          - Blue rectangles around individual sentence boxes within each text block.
+          - Red rectangles around the entire text block (paragraph).
+        """
         for i in range(len(self.ocr_data_['text'])):
             x = self.ocr_data_['left'][i]
             y = self.ocr_data_['top'][i]
@@ -219,10 +258,13 @@ class ProcessingBlock:
         return
     
 
-    def show_result(self, wait_time: int= 0) -> None:
-        '''
-        Show result image
-        '''
+    def show_result(self, wait_time: int = 0) -> None:
+        """
+        Display the final processed image with the translated text.
+
+        Args:
+            wait_time (int, optional): Delay in milliseconds for the display window. Defaults to 0.
+        """
         cv2.imshow("result", self.result_image_)
 
         cv2.waitKey(wait_time)
@@ -231,10 +273,13 @@ class ProcessingBlock:
         return
     
 
-    def show_all(self, wait_time: int= 0) -> None:
-        '''
-        Show saved all image
-        '''
+    def show_all(self, wait_time: int = 0) -> None:
+        """
+        Display the original image, the intermediate visualization with bounding boxes, and the final result image.
+
+        Args:
+            wait_time (int, optional): Delay in milliseconds for the display windows. Defaults to 0.
+        """
         cv2.imshow("origin", self.image_)
         cv2.imshow("process", self.sub_image_)
         cv2.imshow("result", self.result_image_)
@@ -245,7 +290,16 @@ class ProcessingBlock:
         return
     
 
-    def save_result(self, path:str =None) -> None:
+    def save_result(self, path:str = None) -> None:
+        """
+        Save the processed image to disk.
+
+        If a path is provided, the image is saved to that location. 
+        Otherwise, the image is saved using the default save path concatenated with the input image path.
+
+        Args:
+            path (str, optional): File path where the image will be saved. Defaults to None.
+        """
         if path is None:
             file_name = self.save_path_ + self.image_path_[1:]
             cv2.imwrite(file_name, self.result_image_)
