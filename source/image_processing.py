@@ -213,32 +213,35 @@ class ProcessingBlock:
           - Blue rectangles around individual sentence boxes within each text block.
           - Red rectangles around the entire text block (paragraph).
         """
+        # Draw bounding boxes for individual OCR text components
         for i in range(len(self.ocr_data_['text'])):
             x = self.ocr_data_['left'][i]
             y = self.ocr_data_['top'][i]
             w = self.ocr_data_['width'][i]
             h = self.ocr_data_['height'][i]
-            
             text = self.ocr_data_['text'][i]
             conf = int(self.ocr_data_['conf'][i])
 
             if conf > self.sentence_threshold_ and len(text)>0:
+                # Draw Green rectangles for each word box
                 cv2.rectangle(self.sub_image_, (x,y), (x+w,y+h), (0,255,0), 1)
 
+        # Draw bounding boxes for grouped text blocks and their sentence-level positions
         for i in range(len(self.block_data_['text'])):
             x = self.block_data_['left'][i]
             y = self.block_data_['top'][i]
             w = self.block_data_['width'][i]
             h = self.block_data_['height'][i]
-
             text = self.block_data_['text'][i]
             line = self.block_data_['line'][i]
             lpos = self.block_data_['lpos'][i]
             
+            # Draw blue rectangles for each sentence box
             for j in range(line):
                 lx, ly, lw, lh = lpos[j]
                 cv2.rectangle(self.sub_image_, (lx-1,ly-1), (lx+lw+1,ly+lh+1), (255,0,0), 1)
 
+            # Draw a red rectangle around the entire text block
             cv2.rectangle(self.sub_image_, (x-3,y-3), (x+w+3,y+h+3), (0,0,255), 1)
 
         return
@@ -252,7 +255,6 @@ class ProcessingBlock:
             wait_time (int, optional): Delay in milliseconds for the display window. Defaults to 0.
         """
         cv2.imshow("result", self.result_image_)
-
         cv2.waitKey(wait_time)
         cv2.destroyAllWindows()
 
@@ -269,7 +271,6 @@ class ProcessingBlock:
         cv2.imshow("origin", self.image_)
         cv2.imshow("process", self.sub_image_)
         cv2.imshow("result", self.result_image_)
-
         cv2.waitKey(wait_time)
         cv2.destroyAllWindows()
 
@@ -291,4 +292,5 @@ class ProcessingBlock:
             cv2.imwrite(file_name, self.result_image_)
         else:
             cv2.imwrite(path, self.result_image_)
+
         return
