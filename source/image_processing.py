@@ -138,12 +138,15 @@ class ProcessingBlock:
             fsize = self.block_data_['fsize'][i]
 
             # Create a ParagraphBlock instance for the current text block
-            self.blocks_.append(paragraph_block.ParagraphBlock(x=x, y=y, w=w, h=h, \
-                                                               text=text, \
-                                                               line=line, \
-                                                               lpos=lpos, \
-                                                               fsize=fsize, \
-                                                               translator_mode=self.translator_mode_))
+            block = paragraph_block.ParagraphBlock(
+                x = x, y = y, w = w, h = h, 
+                text = text, 
+                line = line, 
+                lpos = lpos, 
+                fsize = fsize, 
+                translator_mode = self.translator_mode_
+            )
+            self.blocks_.append(block)
             
         return
     
