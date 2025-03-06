@@ -164,12 +164,19 @@ class ProcessingBlock:
         """
         if self.block_data_ is None:
             self.recollection_text()
+
+        if not self.blocks_:
             self.build_blocks()
+        
+        # Convert the result image to a PIL image for rendering text
+        pil_image = Image.fromarray(self.result_image_)
+        draw = ImageDraw.Draw(pil_image)
         
         # Works with each paragraph object
         for block in self.blocks_:
             block.color_find(self.image_)
             block.text_translate(src_lang=self.src_lang_, dest_lang=self.dest_lang_)
+
             block_line, block_lpos, block_text = block.get_translated_text()
             background_color, font_color = block.get_color()
             font_size = block.get_font_size()
@@ -182,24 +189,17 @@ class ProcessingBlock:
                 box_ft = font_color[i]
                 box_fs = font_size[i]
 
-                # Clear existing text by covering the existing text area with background color
-                cv2.rectangle(self.result_image_, (box_x, box_y), (box_x+box_w, box_y+box_h), box_bg, -1)
+                # Clear the text area by drawing a filled rectangle with the background color
+                draw.rectangle([(box_x, box_y), (box_x + box_w, box_y + box_h)], fill=box_bg)
 
-                # Converting image type for Unicode insertion
-                pil_image = Image.fromarray(self.result_image_)
-
-                # Insert text into the image using translated text and sentence positions
-                # The font size uses the average of the text height contained in the sentence multiplied by the weight
-                # Weights typically use 1.2 but tend to be larger than the original in oversized letters
-                # If you don't use weights, they usually appear smaller than the original
-                draw = ImageDraw.Draw(pil_image)
+                # Load the specified font with scaled size
                 font = ImageFont.truetype(self.font_type_, int(box_fs * (self.font_weight_)))
-                position = (box_x, box_y)
 
-                draw.text(position, box_text, font=font, fill=box_ft)
+                # Draw the translated text at the given position
+                draw.text((box_x, box_y), box_text, font=font, fill=box_ft)
 
-                # Reconverting for cv processing
-                self.result_image_ = np.array(pil_image)
+        # Update the result image from the PIL image
+        self.result_image_ = np.array(pil_image)
 
         return self.result_image_
     
