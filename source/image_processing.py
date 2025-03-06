@@ -30,28 +30,6 @@ class ProcessingBlock:
         block_data_ (dict): Dictionary containing grouped text block data.
         blocks_ (list): List of ParagraphBlock objects created from the grouped text.
     """
-    image_path_ = ".\\test1.jpg"
-    save_path_ = ''
-    src_lang_ = ''
-    dest_lang_ = ''
-    font_type_ = ''
-
-    # thresholds and weights used in the operation
-    font_weight_ = 1.2
-    sentence_threshold_ = 50
-    block_threshold_ = 1.5
-    translator_mode_ = 'argos'
-
-    # Image read in cv, Original, for visualization, for results
-    image_ = None
-    sub_image_ = None
-    result_image_ = None
-
-    # Dictionaries and list used for paragraph objects
-    ocr_data_ = None
-    block_data_ = None
-    blocks_ = []
-    
 
     def __init__(self, image_path: str, \
                  save_path: str= ".\\result", \
@@ -81,16 +59,22 @@ class ProcessingBlock:
         self.src_lang_ = src_lang
         self.dest_lang_ = dest_lang
         self.font_type_ = font_type
-
         self.font_weight_ = font_weight
         self.sentence_threshold_ = sentence_threshold
         self.block_threshold_ = block_threshold
         self.translator_mode_ = translator_mode
 
-        # the part read the image in cv
+        # Load the image using OpenCV
         self.image_ = cv2.imread(self.image_path_)
+        if self.image_ is None:
+            raise ValueError(f"Unable to load image from path: {self.image_path_}")
         self.sub_image_ = self.image_.copy()
         self.result_image_ = self.image_.copy()
+
+        # OCR and text block data
+        self.ocr_data_ = None
+        self.block_data_ = None
+        self.blocks_ = []
 
         return
     
