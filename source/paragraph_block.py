@@ -107,7 +107,7 @@ class ParagraphBlock:
         roi = erase_text.find_roi(image, self.x_, self.y_, self.width_, self.height_)
         cluster = erase_text.make_cluster(roi)
 
-        background_color = erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=0)
+        background_color = tuple(erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=0))
         self.background_color_ = [background_color]
 
         font_color = tuple(erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=1))
@@ -129,7 +129,7 @@ class ParagraphBlock:
             roi = erase_text.find_roi(image, line_x, line_y, line_w, line_h)
             cluster = erase_text.make_cluster(roi)
 
-            background_color = erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=0)
+            background_color = tuple(erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=0))
             bg_colors.append(background_color)
 
             font_color = tuple(erase_text.find_dominant_color(cluster, cluster.cluster_centers_, order=1))
