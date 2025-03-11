@@ -27,6 +27,7 @@ class ProcessingBlock:
         sub_image_ (np.ndarray): Copy of the original image used for drawing visualizations.
         result_image_ (np.ndarray): Copy of the image where the translated text is rendered.
         ocr_data_ (dict): Dictionary containing raw OCR data returned by pytesseract.
+        sentence_data_ (dict): Dictionary containing grouped sentence data.
         block_data_ (dict): Dictionary containing grouped text block data.
         blocks_ (list): List of ParagraphBlock objects created from the grouped text.
     """
@@ -73,6 +74,7 @@ class ProcessingBlock:
 
         # OCR and text block data
         self.ocr_data_ = None
+        self.sentence_data_ = None
         self.block_data_ = None
         self.blocks_ = []
 
@@ -107,10 +109,10 @@ class ProcessingBlock:
             self.ocr_process()
 
         # Group OCR data into sentences based on the confidence threshold
-        sentence_data = make_sentence_block.find_sentence(self.ocr_data_, self.sentence_threshold_)
+        self.sentence_data_ = make_sentence_block.find_sentence(self.ocr_data_, self.sentence_threshold_)
 
         # Group sentences into paragraphs/text blocks using the block threshold
-        self.block_data_ = make_sentence_block.make_sentence_block(sentence_data, threshold=self.block_threshold_)
+        self.block_data_ = make_sentence_block.make_sentence_block(self.sentence_data_, threshold=self.block_threshold_)
 
         return self.block_data_
     
