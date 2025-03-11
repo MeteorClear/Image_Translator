@@ -22,7 +22,18 @@ def run(args):
 
     if args.result == 0:
         image_translator.show_result()
-        
+
+    elif args.result == 1:
+        image_translator.save_result()
+
+    elif args.result == 2:
+        image_translator.save_result()
+        image_translator.show_result()
+
+    elif args.result == 3:
+        image_translator.save_result()
+        image_translator.show_all()
+
     return
 
 def main():
