@@ -2,6 +2,7 @@ import os
 import dotenv
 import pathlib
 import fastapi
+import hashlib
 
 dotenv.load_dotenv()
 
@@ -14,6 +15,14 @@ RESULT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 #app = fastapi.FastAPI()
+
+# cal file hash
+def get_file_hash(file_path):
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
 
 # todo: arg set, image
 def upload_image():
