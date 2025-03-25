@@ -3,7 +3,7 @@ import dotenv
 import pathlib
 import hashlib
 import shutil
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from datetime import datetime
 from pymongo import MongoClient
 
@@ -57,7 +57,6 @@ def upload_image(image: UploadFile = File(...)):
     result = collection.insert_one(record)
 
     try:
-        pass
         # todo: run process
 
         # if run success
@@ -72,8 +71,7 @@ def upload_image(image: UploadFile = File(...)):
         )
 
     except Exception as e:
-        pass
-        # todo: exception
+        raise HTTPException(status_code=500, detail=f"process failure: {str(e)}")
 
     return
 
