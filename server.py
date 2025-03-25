@@ -44,7 +44,9 @@ def upload_image(image: UploadFile = File(...)):
 
     file_hash = get_file_hash(save_path)
 
-    # todo: check duplication
+    existing_file = collection.find_one({"file_hash": file_hash})
+    if existing_file:
+        raise HTTPException(status_code=303, detail="already existing file")
 
     record = {
         "file_hash": file_hash,
