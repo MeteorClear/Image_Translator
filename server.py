@@ -46,7 +46,15 @@ def upload_image(image: UploadFile = File(...)):
 
     # todo: check duplication
 
-    # todo: save file info in db
+    record = {
+        "file_hash": file_hash,
+        "original_file_path": str(save_path),
+        "created_at": datetime.datetime(),
+        "processed": False,
+        "processed_at": None,
+        "result_file_path": None
+    }
+    result = collection.insert_one(record)
 
     try:
         pass
@@ -59,3 +67,15 @@ def upload_image(image: UploadFile = File(...)):
         # todo: exception
 
     return
+
+
+'''
+record = {
+    "file_hash":
+    "original_file_path":
+    "created_at":
+    "processed":
+    "processed_at":
+    "result_file_path":
+}
+'''
