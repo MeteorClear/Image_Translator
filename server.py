@@ -60,7 +60,16 @@ def upload_image(image: UploadFile = File(...)):
         pass
         # todo: run process
 
-        # todo: update db
+        # if run success
+        result_file_path = RESULT_DIR / f"{file_hash}{pathlib.Path(image.filename).suffix}"
+        collection.update_one(
+            {"_id": result.inserted_id},
+            {"$set": {
+                "processed": True,
+                "processed_at": datetime.datetime(),
+                "result_file_path": str(result_file_path)
+            }}
+        )
 
     except Exception as e:
         pass
