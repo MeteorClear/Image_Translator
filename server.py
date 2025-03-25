@@ -1,8 +1,10 @@
 import os
 import dotenv
 import pathlib
-import fastapi
 import hashlib
+import shutil
+from fastapi import FastAPI, UploadFile, File
+from datetime import datetime
 
 dotenv.load_dotenv()
 
@@ -14,7 +16,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 RESULT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-#app = fastapi.FastAPI()
+#app = FastAPI()
 
 # cal file hash
 def get_file_hash(file_path):
@@ -25,8 +27,11 @@ def get_file_hash(file_path):
     return sha256_hash.hexdigest()
 
 # todo: arg set, image
-def upload_image():
-    # todo: save image
+def upload_image(image: UploadFile):
+    save_path = UPLOAD_DIR / f"{datetime.datetime().strftime('%Y%m%d_%H%M%S_%f')}_{image.filename}"
+
+    with open(save_path, "wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
 
     # todo: cal hash
 
