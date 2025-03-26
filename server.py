@@ -79,8 +79,8 @@ def upload_image(image: UploadFile = File(...)):
 
 
 # if exist res file, send file
-def download_image():
-    # todo: serch file hash
+def download_image(file_hash: str):
+    file_info = collection.find_one({"file_hash": file_hash})
 
     # todo: if hash not exist, exception
 
