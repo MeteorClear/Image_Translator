@@ -1,19 +1,22 @@
 import os
-import dotenv
-import hashlib
-import shutil
 import sys
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from datetime import datetime, timezone
-from pymongo import MongoClient
+import dotenv
+import shutil
+import hashlib
+
 from pathlib import Path
+from pymongo import MongoClient
+from datetime import datetime, timezone
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
+
 sys.path.append(".\\source")
 from source import image_processing
 
+# Load environment variables from .env file
 dotenv.load_dotenv()
 
-
+# MongoDB connection details from environment variables
 MONGODB_URL = os.getenv("MONGODB_URL")
 DB_NAME = os.getenv("DB_NAME")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME")
@@ -22,17 +25,28 @@ client = MongoClient(MONGODB_URL)
 db = client[DB_NAME]
 collection = db[COLLECTION_NAME]
 
+# Directories for uploaded files and processed results
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR"))
 RESULT_DIR = Path(os.getenv("RESULT_DIR"))
-
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 RESULT_DIR.mkdir(parents=True, exist_ok=True)
 
 
+# FastAPI instance
 app = FastAPI()
 
+
 # cal file hash
-def get_file_hash(file_path: str):
+def get_file_hash(file_path: str) -> str:
+    """
+    Calculate SHA-256 hash of a given file.
+
+    Args:
+        file_path (str): Path to the file.
+
+    Returns:
+        str: SHA-256 hash of the file.
+    """
     sha256_hash = hashlib.sha256()
     with open(file_path, "rb") as f:
         for byte_block in iter(lambda: f.read(4096), b""):
@@ -40,7 +54,15 @@ def get_file_hash(file_path: str):
     return sha256_hash.hexdigest()
 
 
-def run(image_path: str, save_path: str):
+def run(image_path: str, save_path: str) -> None:
+    """
+    Run the image processing pipeline.  
+    The image of a given image path read to perform image translation and store.
+
+    Args:
+        image_path (str): Path to the input image.
+        save_path (str): Path to save the processed image.
+    """
     image_translator = image_processing.ProcessingBlock(
         image_path = image_path,
         save_path = save_path
@@ -58,6 +80,18 @@ def run(image_path: str, save_path: str):
 
 @app.post("/upload")
 async def upload_image(image: UploadFile = File(...)):
+    """
+    Endpoint to upload and process the image file.
+
+    Args:
+        image (UploadFile): Image file uploaded by the user
+
+    Returns:
+        dict: Success message and file hash.
+
+    Raises:
+        HTTPException: If the file already exists(303) or processing fails(500).
+    """
     save_path = UPLOAD_DIR / f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}_{image.filename}"
 
     with open(save_path, "wb") as buffer:
@@ -101,6 +135,18 @@ async def upload_image(image: UploadFile = File(...)):
 
 @app.get("/download/{file_hash}")
 async def download_image(file_hash: str):
+    """
+    Endpoint to download the processed image file using its hash.
+
+    Args:
+        file_hash (str): SHA-256 hash of the processed file.
+    
+    Returns:
+        FileResponse: The processed file to download.
+
+    Raises:
+        HTTPException: If file hash is not found(404), file is not processed(404), or result file is missing(404).
+    """
     file_info = collection.find_one({"file_hash": file_hash})
 
     if not file_info:
@@ -120,12 +166,13 @@ async def download_image(file_hash: str):
     )
 
 '''
+Database Record Structure:
 record = {
-    "file_hash":
-    "original_file_path":
-    "created_at":
-    "processed":
-    "processed_at":
-    "result_file_path":
+    "file_hash":                SHA-256 hash of the file
+    "original_file_path":       Path to the uploaded file
+    "created_at":               Timestamp when the file was uploaded(utc)
+    "processed":                Boolean to indicate processing status
+    "processed_at":             Timestamp when processing completed(utc)
+    "result_file_path":         Path to the processed result
 }
 '''
