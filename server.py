@@ -57,7 +57,7 @@ def run(image_path: str, save_path: str):
 
 
 @app.post("/upload")
-def upload_image(image: UploadFile = File(...)):
+async def upload_image(image: UploadFile = File(...)):
     save_path = UPLOAD_DIR / f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}_{image.filename}"
 
     with open(save_path, "wb") as buffer:
@@ -100,7 +100,7 @@ def upload_image(image: UploadFile = File(...)):
 
 
 @app.get("/download/{file_hash}")
-def download_image(file_hash: str):
+async def download_image(file_hash: str):
     file_info = collection.find_one({"file_hash": file_hash})
 
     if not file_info:
