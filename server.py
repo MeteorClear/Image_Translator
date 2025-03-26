@@ -26,7 +26,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 RESULT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-#app = FastAPI()
+app = FastAPI()
 
 # cal file hash
 def get_file_hash(file_path):
@@ -36,7 +36,8 @@ def get_file_hash(file_path):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
 
-# api
+
+@app.post("/upload")
 def upload_image(image: UploadFile = File(...)):
     save_path = UPLOAD_DIR / f"{datetime.datetime().strftime('%Y%m%d_%H%M%S_%f')}_{image.filename}"
 
@@ -79,7 +80,7 @@ def upload_image(image: UploadFile = File(...)):
     return {"message": "process success", "file_hash": file_hash}
 
 
-# if exist res file, send file
+@app.get("/download/{file_hash}")
 def download_image(file_hash: str):
     file_info = collection.find_one({"file_hash": file_hash})
 
