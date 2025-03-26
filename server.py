@@ -82,7 +82,8 @@ def upload_image(image: UploadFile = File(...)):
 def download_image(file_hash: str):
     file_info = collection.find_one({"file_hash": file_hash})
 
-    # todo: if hash not exist, exception
+    if not file_info:
+        raise HTTPException(status_code=404, detail="file hash not found")
 
     # todo: if hash found, not processed, exception
 
