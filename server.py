@@ -1,11 +1,12 @@
 import os
 import dotenv
-import pathlib
+
 import hashlib
 import shutil
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from datetime import datetime
 from pymongo import MongoClient
+from pathlib import Path
 
 dotenv.load_dotenv()
 
@@ -18,8 +19,8 @@ client = MongoClient(MONGODB_URL)
 db = client[DB_NAME]
 collection = db[COLLECTION_NAME]
 
-UPLOAD_DIR = pathlib.Path(os.getenv("UPLOAD_DIR"))
-RESULT_DIR = pathlib.Path(os.getenv("RESULT_DIR"))
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR"))
+RESULT_DIR = Path(os.getenv("RESULT_DIR"))
 
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 RESULT_DIR.mkdir(parents=True, exist_ok=True)
@@ -62,7 +63,7 @@ def upload_image(image: UploadFile = File(...)):
         # todo: run process
 
         # if run success
-        result_file_path = RESULT_DIR / f"{file_hash}{pathlib.Path(image.filename).suffix}"
+        result_file_path = RESULT_DIR / f"{file_hash}{Path(image.filename).suffix}"
         collection.update_one(
             {"_id": result.inserted_id},
             {"$set": {
@@ -90,7 +91,7 @@ def download_image(file_hash: str):
         raise HTTPException(status_code=404, detail="file did not process")
     
     result_file_path = file_info.get("result_file_path")
-    if not result_file_path or not pathlib.Path(result_file_path).is_file():
+    if not result_file_path or not Path(result_file_path).is_file():
         raise HTTPException(status_code=404, detail="result file not found")
 
     # hash found, processed, response, send file
