@@ -85,7 +85,13 @@ def download_image(file_hash: str):
     if not file_info:
         raise HTTPException(status_code=404, detail="file hash not found")
 
-    # todo: if hash found, not processed, exception
+    processed = file_info.get("processed")
+    if not processed:
+        raise HTTPException(status_code=404, detail="file did not process")
+    
+    result_file_path = file_info.get("result_file_path")
+    if not result_file_path or not pathlib.Path(result_file_path).is_file():
+        raise HTTPException(status_code=404, detail="result file not found")
 
     # hash found, processed, response, send file
 
