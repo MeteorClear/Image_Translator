@@ -1,12 +1,12 @@
 import os
 import dotenv
-
 import hashlib
 import shutil
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from datetime import datetime
 from pymongo import MongoClient
 from pathlib import Path
+from fastapi.responses import FileResponse
 
 dotenv.load_dotenv()
 
@@ -96,7 +96,10 @@ def download_image(file_hash: str):
 
     # hash found, processed, response, send file
 
-    return
+    return FileResponse(
+        path = result_file_path,
+        filename = Path(result_file_path).name
+    )
 
 '''
 record = {
