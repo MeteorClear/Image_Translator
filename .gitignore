@@ -4,3 +4,4 @@ testdata/
 uploads/
 results/
 test.py
+__pycache__/
