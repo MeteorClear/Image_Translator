@@ -2,11 +2,14 @@ import os
 import dotenv
 import hashlib
 import shutil
+import sys
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from datetime import datetime, timezone
 from pymongo import MongoClient
 from pathlib import Path
 from fastapi.responses import FileResponse
+sys.path.append(".\\source")
+from source import image_processing
 
 dotenv.load_dotenv()
 
@@ -29,12 +32,28 @@ RESULT_DIR.mkdir(parents=True, exist_ok=True)
 app = FastAPI()
 
 # cal file hash
-def get_file_hash(file_path):
+def get_file_hash(file_path: str):
     sha256_hash = hashlib.sha256()
     with open(file_path, "rb") as f:
         for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
+
+
+def run(image_path: str, save_path: str):
+    image_translator = image_processing.ProcessingBlock(
+        image_path = image_path,
+        save_path = save_path
+    )
+
+    image_translator.ocr_process()
+    image_translator.recollection_text()
+    image_translator.build_blocks()
+    image_translator.processing_run()
+    image_translator.draw_process()
+    image_translator.save_result()
+
+    return
 
 
 @app.post("/upload")
@@ -61,10 +80,10 @@ def upload_image(image: UploadFile = File(...)):
     result = collection.insert_one(record)
 
     try:
-        # todo: run process
-
-        # if run success
         result_file_path = RESULT_DIR / f"{file_hash}{Path(image.filename).suffix}"
+
+        run(str(save_path), str(result_file_path))
+
         collection.update_one(
             {"_id": result.inserted_id},
             {"$set": {
@@ -94,8 +113,6 @@ def download_image(file_hash: str):
     result_file_path = file_info.get("result_file_path")
     if not result_file_path or not Path(result_file_path).is_file():
         raise HTTPException(status_code=404, detail="result file not found")
-
-    # hash found, processed, response, send file
 
     return FileResponse(
         path = result_file_path,
