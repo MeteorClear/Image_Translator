@@ -75,8 +75,20 @@ def upload_image(image: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"process failure: {str(e)}")
 
-    return
+    return {"message": "process success", "file_hash": file_hash}
 
+
+# if exist res file, send file
+def download_image():
+    # todo: serch file hash
+
+    # todo: if hash not exist, exception
+
+    # todo: if hash found, not processed, exception
+
+    # hash found, processed, response, send file
+
+    return
 
 '''
 record = {
