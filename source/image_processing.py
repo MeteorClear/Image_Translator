@@ -290,8 +290,7 @@ class ProcessingBlock:
             path (str, optional): File path where the image will be saved. Defaults to None.
         """
         if path is None:
-            file_name = self.save_path_ + self.image_path_[1:]
-            cv2.imwrite(file_name, self.result_image_)
+            cv2.imwrite(self.save_path_, self.result_image_)
         else:
             cv2.imwrite(path, self.result_image_)
 
