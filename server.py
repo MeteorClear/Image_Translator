@@ -3,7 +3,7 @@ import dotenv
 import hashlib
 import shutil
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
 from pymongo import MongoClient
 from pathlib import Path
 from fastapi.responses import FileResponse
@@ -39,7 +39,7 @@ def get_file_hash(file_path):
 
 @app.post("/upload")
 def upload_image(image: UploadFile = File(...)):
-    save_path = UPLOAD_DIR / f"{datetime.datetime().strftime('%Y%m%d_%H%M%S_%f')}_{image.filename}"
+    save_path = UPLOAD_DIR / f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}_{image.filename}"
 
     with open(save_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
@@ -53,7 +53,7 @@ def upload_image(image: UploadFile = File(...)):
     record = {
         "file_hash": file_hash,
         "original_file_path": str(save_path),
-        "created_at": datetime.datetime(),
+        "created_at": datetime.now(timezone.utc),
         "processed": False,
         "processed_at": None,
         "result_file_path": None
@@ -69,7 +69,7 @@ def upload_image(image: UploadFile = File(...)):
             {"_id": result.inserted_id},
             {"$set": {
                 "processed": True,
-                "processed_at": datetime.datetime(),
+                "processed_at": datetime.now(timezone.utc),
                 "result_file_path": str(result_file_path)
             }}
         )
