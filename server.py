@@ -7,7 +7,7 @@ import hashlib
 from pathlib import Path
 from pymongo import MongoClient
 from datetime import datetime, timezone
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, JSONResponse
 from fastapi.responses import FileResponse
 
 sys.path.append(".\\source")
@@ -101,7 +101,10 @@ async def upload_image(image: UploadFile = File(...)):
 
     existing_file = collection.find_one({"file_hash": file_hash})
     if existing_file:
-        raise HTTPException(status_code=303, detail="already existing file")
+        return JSONResponse(
+            status_code=303,
+            content={"message": "already existing file", "file_hash": file_hash}
+        )
 
     record = {
         "file_hash": file_hash,
