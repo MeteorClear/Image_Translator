@@ -4,12 +4,16 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import ImageUploader from './ImageUploader.vue'
+import ImagePreview from './ImagePreview.vue'
 
 const selectedFile = ref<File | null>(null)
+const sourceImageUrl = ref('')
+const processedImageUrl = ref('')
 
 const onFileSelected = (file: File) => {
     selectedFile.value = file
-    console.log(selectedFile)
+    sourceImageUrl.value = URL.createObjectURL(file)
+    processedImageUrl.value = ''
 }
     
 </script>
@@ -17,6 +21,8 @@ const onFileSelected = (file: File) => {
 <template>
     <div class="handle-process-container">
         <ImageUploader @file-selected="onFileSelected" />
+
+        <ImagePreview v-if="sourceImageUrl" :imageUrl="sourceImageUrl" />
     </div>
 </template>
 
