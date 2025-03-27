@@ -17,6 +17,7 @@ const onFileSelected = (file: File) => {
     sourceImageUrl.value = URL.createObjectURL(file)
     processedImageUrl.value = ''
     isProcessing.value = false
+    fileHash.value = ''
 }
 
 const handleProcess = async () => {
@@ -41,13 +42,22 @@ const handleProcess = async () => {
             fileHash.value = error.response?.data.file_hash
             console.log(fileHash.value)
         } else {
-            alert('error')
+            alert('process failure')
             console.error(error)
         }
-    } finally {
-        isProcessing.value = false
-
     }
+
+    try {
+        const res = await axios.get(`/download/${fileHash.value}`, { 
+            responseType: 'blob' 
+        })
+        processedImageUrl.value = URL.createObjectURL(res.data)
+    } catch (error: any) {
+        alert('process failure')
+        console.error(error)
+    }
+
+    isProcessing.value = false
 }
 
     
@@ -60,6 +70,8 @@ const handleProcess = async () => {
         <ImagePreview v-if="sourceImageUrl" :imageUrl="sourceImageUrl" />
 
         <button v-if="selectedFile && !isProcessing" @click="handleProcess">Process</button>
+
+        <div v-if="processedImageUrl">In progress ...</div>
     </div>
 </template>
 
