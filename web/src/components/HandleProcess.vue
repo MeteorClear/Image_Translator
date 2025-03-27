@@ -12,8 +12,6 @@ const onFileSelected = (file: File) => {
     console.log(selectedFile)
 }
     
-
-
 </script>
 
 <template>
@@ -23,5 +21,7 @@ const onFileSelected = (file: File) => {
 </template>
 
 <style scoped>
-
+.handle-process-container {
+    margin: 5px;
+}
 </style>

@@ -13,11 +13,13 @@ const onFileChange = (e: Event) => {
 </script>
 
 <template>
-    <div class="image=uploader">
+    <div class="image-uploader">
         <input type="file" accept="image/*" @change="onFileChange" />
     </div>
 </template>
 
 <style scoped>
-
+.image-uploader {
+    margin: 5px;
+}
 </style>
