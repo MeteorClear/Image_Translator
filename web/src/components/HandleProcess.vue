@@ -71,7 +71,12 @@ const handleProcess = async () => {
 
         <button v-if="selectedFile && !isProcessing" @click="handleProcess">Process</button>
 
-        <div v-if="processedImageUrl">In progress ...</div>
+        <div v-if="isProcessing">In progress ...</div>
+
+        <div v-if="processedImageUrl && fileHash">
+            <div>File Hash</div>
+            <div>{{ fileHash }}</div>
+        </div>
     </div>
 </template>
 
