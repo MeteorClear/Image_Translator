@@ -12,7 +12,6 @@ import HandleProcess from './components/HandleProcess.vue'
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
-  <HelloWorld msg="Vite + Vue" />
   <HandleProcess />
 </template>
 
