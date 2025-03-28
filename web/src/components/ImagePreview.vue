@@ -1,7 +1,7 @@
 <!-- Image preview componet -->
 
 <script setup lang="ts">
-defineProps<{imageUrl: string }>()
+defineProps<{ imageUrl: string }>()
 </script>
 
 <template>
