@@ -94,6 +94,9 @@ async def upload_image(image: UploadFile = File(...)):
     Raises:
         HTTPException: If the file already exists(303) or processing fails(500).
     """
+    if not image.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="only image file allowed")
+
     save_path = UPLOAD_DIR / f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}_{image.filename}"
 
     with open(save_path, "wb") as buffer:
