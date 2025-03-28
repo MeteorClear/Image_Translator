@@ -7,7 +7,7 @@ import hashlib
 from pathlib import Path
 from pymongo import MongoClient
 from datetime import datetime, timezone
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -32,6 +32,9 @@ UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR"))
 RESULT_DIR = Path(os.getenv("RESULT_DIR"))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 RESULT_DIR.mkdir(parents=True, exist_ok=True)
+
+# Max file size
+MAX_SIZE = 5 * 1024 * 1024
 
 
 # FastAPI instance
@@ -81,7 +84,7 @@ def run(image_path: str, save_path: str) -> None:
 
 
 @app.post("/upload")
-async def upload_image(image: UploadFile = File(...)):
+async def upload_image(request: Request, image: UploadFile = File(...)):
     """
     Endpoint to upload and process the image file.
 
@@ -92,10 +95,17 @@ async def upload_image(image: UploadFile = File(...)):
         dict: Success message and file hash.
 
     Raises:
-        HTTPException: If the file no-image file(404) or already exists(303) or processing fails(500).
+        HTTPException: 
+            If the file no-image file(404)  
+            or already exists(303)  
+            or processing fails(500).
     """
     if not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="only image file allowed")
+    
+    content_length = request.headers.get('content-length')
+    if content_length and int(content_length) > MAX_SIZE:
+        raise HTTPException(status_code=413, detail="file size exceeded")
 
     save_path = UPLOAD_DIR / f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S_%f')}_{image.filename}"
 
