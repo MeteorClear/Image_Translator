@@ -5,7 +5,6 @@ import { ref } from 'vue'
 import axios from 'axios'
 import ImageUploader from './ImageUploader.vue'
 import ImagePreview from './ImagePreview.vue'
-import ProcessedImageViewer from './ProcessedImageViewer.vue'
 import DownloadImage from './DownloadImage.vue'
 
 const selectedFile = ref<File | null>(null)
@@ -67,7 +66,7 @@ const handleProcess = async () => {
     <div class="handle-process-container">
         <ImageUploader @file-selected="onFileSelected" />
 
-        <ImagePreview v-if="sourceImageUrl" :imageUrl="sourceImageUrl" />
+        <ImagePreview v-if="sourceImageUrl" :imageUrl="sourceImageUrl" :displayText="'Uploaded Image'" />
 
         <button v-if="selectedFile && !isProcessing" @click="handleProcess">Process</button>
 
@@ -78,7 +77,7 @@ const handleProcess = async () => {
             <div>{{ fileHash }}</div>
         </div>
 
-        <ProcessedImageViewer v-if="processedImageUrl" :imageUrl="processedImageUrl" />
+        <ImagePreview v-if="processedImageUrl" :imageUrl="processedImageUrl" :displayText="'Processed Image'" />
 
         <DownloadImage v-if="processedImageUrl" :imageUrl="processedImageUrl" />
     </div>
