@@ -6,6 +6,7 @@ import axios from 'axios'
 import ImageUploader from './ImageUploader.vue'
 import ImagePreview from './ImagePreview.vue'
 import ProcessedImageViewer from './ProcessedImageViewer.vue'
+import DownloadImage from './DownloadImage.vue'
 
 const selectedFile = ref<File | null>(null)
 const sourceImageUrl = ref('')
@@ -60,8 +61,6 @@ const handleProcess = async () => {
 
     isProcessing.value = false
 }
-
-    
 </script>
 
 <template>
@@ -81,7 +80,7 @@ const handleProcess = async () => {
 
         <ProcessedImageViewer v-if="processedImageUrl" :imageUrl="processedImageUrl" />
 
-        
+        <DownloadImage v-if="processedImageUrl" :imageUrl="processedImageUrl" />
     </div>
 </template>
 
