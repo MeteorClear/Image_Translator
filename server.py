@@ -106,6 +106,8 @@ async def upload_image(image: UploadFile = File(...)):
 
     existing_file = collection.find_one({"file_hash": file_hash})
     if existing_file:
+        if save_path.is_file():
+            save_path.unlink()
         return JSONResponse(
             status_code=303,
             content={"message": "already existing file", "file_hash": file_hash}
@@ -121,7 +123,7 @@ async def upload_image(image: UploadFile = File(...)):
     }
     try:
         result = collection.insert_one(record)
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
 
