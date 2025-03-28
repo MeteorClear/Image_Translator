@@ -92,7 +92,7 @@ async def upload_image(image: UploadFile = File(...)):
         dict: Success message and file hash.
 
     Raises:
-        HTTPException: If the file already exists(303) or processing fails(500).
+        HTTPException: If the file no-image file(404) or already exists(303) or processing fails(500).
     """
     if not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="only image file allowed")
