@@ -10,7 +10,9 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 
-sys.path.append(".\\source")
+BASE_DIR = Path(__file__).resolve().parent
+MODULE_DIR = BASE_DIR / "source"
+sys.path.append(str(MODULE_DIR))
 from source import image_processing
 
 # Load environment variables from .env file
