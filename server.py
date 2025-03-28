@@ -119,7 +119,11 @@ async def upload_image(image: UploadFile = File(...)):
         "processed_at": None,
         "result_file_path": None
     }
-    result = collection.insert_one(record)
+    try:
+        result = collection.insert_one(record)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
 
     try:
         result_file_path = RESULT_DIR / f"{file_hash}{Path(image.filename).suffix}"
